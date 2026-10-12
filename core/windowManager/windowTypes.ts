@@ -18,12 +18,21 @@ export type WindowGeometry = {
 export type WindowDefinition = {
   windowId: string;
   appId: string;
-
   title: string;
 
-  geometry: WindowGeometry;
+  position: WindowPosition;
+  size: WindowSize;
+
   previousGeometry: WindowGeometry | null;
 
   state: WindowState;
   zIndex: number;
+};
+
+export type CreateWindowOptions = {
+  windowId: string;
+  appId: string;
+  title: string;
+  position?: WindowPosition;
+  size?: WindowSize;
 };

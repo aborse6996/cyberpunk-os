@@ -17,7 +17,11 @@ const initialPositions: Record<string, Position> = Object.fromEntries(
   desktopIcons.map((icon) => [icon.id, icon.position]),
 );
 
-const DesktopIcons = ({ selectedIcon, setSelectedIcon }: DesktopIconsProps) => {
+const DesktopIcons = ({
+  selectedIcon,
+  setSelectedIcon,
+  onLaunchApp,
+}: DesktopIconsProps) => {
   const [positions, setPositions] =
     useState<Record<string, Position>>(initialPositions);
 
@@ -35,7 +39,7 @@ const DesktopIcons = ({ selectedIcon, setSelectedIcon }: DesktopIconsProps) => {
   });
 
   const handleOpen = (appId: string) => {
-    console.log(`Launching application: ${appId}`);
+    onLaunchApp(appId);
   };
 
   const handleContextMenu = (
@@ -72,8 +76,8 @@ const DesktopIcons = ({ selectedIcon, setSelectedIcon }: DesktopIconsProps) => {
           const position = positions[item.id];
           const app = appRegistry.getById(item.appId);
 
-          if(!app) {
-            return null
+          if (!app) {
+            return null;
           }
 
           return (

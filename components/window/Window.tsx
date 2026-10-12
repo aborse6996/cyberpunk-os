@@ -4,6 +4,8 @@ import { WindowPosition, WindowSize } from "@/core/windowManager/windowTypes";
 import WindowContent from "./WindowContent";
 import WindowHeader from "./WindowHeader";
 import { useWindowDrag } from "./hooks/useWindowDrag";
+import { useWindowResize } from "./hooks/useWindowResize";
+import WindowResizeHandle from "./WindowResizeHandle";
 
 type BoundsRef = {
   readonly current: HTMLElement | null;
@@ -22,11 +24,15 @@ type WindowProps = {
 
   boundsRef: BoundsRef;
   onPositionChange: (position: WindowPosition) => void;
+  onSizeChange: (size: WindowSize) => void;
 
   onFocusRequest: (windowId: string) => void;
 
   onMinimize: (windowId: string) => void;
   onClose: (windowId: string) => void;
+
+  isMaximized: boolean;
+  onToggleMaximize: (windowId: string) => void;
 };
 
 const Window = ({
@@ -39,9 +45,12 @@ const Window = ({
   isActive = true,
   boundsRef,
   onPositionChange,
+  onSizeChange,
   onFocusRequest,
   onMinimize,
   onClose,
+  isMaximized,
+  onToggleMaximize,
 }: WindowProps) => {
   const { handlePointerDown, handlePointerMove, handlePointerUp } =
     useWindowDrag({
@@ -50,6 +59,18 @@ const Window = ({
       boundsRef,
       onPositionChange,
     });
+
+  const {
+    handlePointerDown: handleResizePointerDown,
+    handlePointerMove: handleResizePointerMove,
+    handlePointerUp: handleResizePointerUp,
+  } = useWindowResize({
+    position,
+    size,
+    boundsRef,
+    onSizeChange,
+  });
+
   return (
     <section
       className={`pointer-events-auto absolute flex flex-col overflow-hidden rounded-xl border bg-[#070B14]/95 backdrop-blur-xl transition-[border-color,box-shadow] duration-200 
@@ -70,10 +91,19 @@ const Window = ({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onMinimize={() => onMinimize(windowId)}
+        onToggleMaximize={() => onToggleMaximize(windowId)}
         onClose={() => onClose(windowId)}
+        isMaximized={isMaximized}
       />
 
       <WindowContent>{children}</WindowContent>
+      {!isMaximized && (
+        <WindowResizeHandle
+          onPointerDown={handleResizePointerDown}
+          onPointerMove={handleResizePointerMove}
+          onPointerUp={handleResizePointerUp}
+        />
+      )}
     </section>
   );
 };

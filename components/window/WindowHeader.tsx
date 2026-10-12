@@ -7,6 +7,8 @@ type WindowHeaderProps = {
   onPointerUp: React.PointerEventHandler<HTMLElement>;
   onMinimize: () => void;
   onClose: () => void;
+  onToggleMaximize: () => void;
+  isMaximized: boolean;
 };
 
 const WindowHeader = ({
@@ -16,6 +18,8 @@ const WindowHeader = ({
   onPointerUp,
   onMinimize,
   onClose,
+  onToggleMaximize,
+  isMaximized,
 }: WindowHeaderProps) => {
   return (
     <header
@@ -35,7 +39,12 @@ const WindowHeader = ({
           </p>
         </div>
       </div>
-      <WindowControls onMinimize={onMinimize} onClose={onClose} />
+      <WindowControls
+        onMinimize={onMinimize}
+        onToggleMaximize={onToggleMaximize}
+        onClose={onClose}
+        isMaximized={isMaximized}
+      />
     </header>
   );
 };

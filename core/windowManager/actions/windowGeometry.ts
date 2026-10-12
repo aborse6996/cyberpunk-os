@@ -1,4 +1,5 @@
 import type { WindowPosition, WindowSize } from "../windowTypes";
+import { clampWindowSize } from "./windowConstraints";
 
 type WorkspaceSize = {
   width: number;
@@ -11,6 +12,13 @@ type DragPositionOptions = {
   deltaY: number;
   windowSize: WindowSize;
   workspaceSize: WorkspaceSize;
+};
+
+type ResizeWindowOptions = {
+  startSize: WindowSize;
+  deltaX: number;
+  deltaY: number;
+  availableSize: WindowSize;
 };
 
 export const calculateDraggedPosition = ({
@@ -27,4 +35,21 @@ export const calculateDraggedPosition = ({
     x: Math.min(maxX, Math.max(0, startPosition.x + deltaX)),
     y: Math.min(maxY, Math.max(0, startPosition.y + deltaY)),
   };
+};
+
+export const calculateResizedSize = ({
+  startSize,
+  deltaX,
+  deltaY,
+  availableSize,
+}: ResizeWindowOptions): WindowSize => {
+  const requestedSize = {
+    width: startSize.width + deltaX,
+    height: startSize.height + deltaY,
+  };
+
+  return clampWindowSize(
+    requestedSize,
+    availableSize
+  );
 };

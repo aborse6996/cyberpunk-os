@@ -33,6 +33,7 @@ export type DragState = {
 export type DesktopIconsProps = {
   selectedIcon: string | null;
   setSelectedIcon: Dispatch<SetStateAction<string | null>>;
+  onLaunchApp: (appId: string) => void;
 };
 
 export type DesktopIconProps = {
