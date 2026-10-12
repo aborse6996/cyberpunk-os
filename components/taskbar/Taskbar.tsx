@@ -4,6 +4,10 @@ import { useWindowManager } from "@/hooks/useWindowManager";
 
 import RunningApps from "./RunningApps";
 import SystemTray from "./SystemTray";
+import StartButton from "./StartButton";
+import StartMenu from "./StartMenu";
+import { useEffect, useRef, useState } from "react";
+import { launchApp } from "@/core/apps/appLauncher";
 
 const Taskbar = () => {
   const {
@@ -13,6 +17,41 @@ const Taskbar = () => {
     minimizeWindow,
     restoreWindow,
   } = useWindowManager();
+
+  const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
+
+  const startAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isStartMenuOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+
+      if (target instanceof Node && !startAreaRef.current?.contains(target)) {
+        setIsStartMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsStartMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isStartMenuOpen]);
+
+  const handleLaunchApp = (appId: string) => {
+    launchApp(appId);
+    setIsStartMenuOpen(false);
+  };
 
   const handleWindowClick = (windowId: string) => {
     const selectedWindow = windows.find(
@@ -45,35 +84,31 @@ const Taskbar = () => {
         backdrop-blur-2xl
       "
     >
-      <div className="flex shrink-0 items-center gap-3">
-        <div
-          className="
-            flex h-9 w-9 items-center justify-center
-            rounded-lg border border-cyan-300/30
-            bg-cyan-300/10 text-sm font-bold
-            text-cyan-200 shadow-[0_0_15px_rgba(34,211,238,0.08)]
-          "
-        >
-          C
-        </div>
+      {/* Start Button + Start Menu */}
+      <div
+        ref={startAreaRef}
+        className="relative flex shrink-0 items-center"
+      >
+        <StartButton
+          isOpen={isStartMenuOpen}
+          onClick={() =>
+            setIsStartMenuOpen((previous) => !previous)
+          }
+        />
 
-        <div className="hidden flex-col sm:flex">
-          <span className="text-[11px] font-semibold tracking-[0.16em] text-cyan-50">
-            CYBERPUNK
-          </span>
-
-          <span className="text-[9px] uppercase tracking-[0.2em] text-slate-500">
-            Operating System
-          </span>
-        </div>
+        {isStartMenuOpen && (
+          <StartMenu onLaunchApp={handleLaunchApp} />
+        )}
       </div>
 
+      {/* Running Applications */}
       <RunningApps
         windows={windows}
         activeWindowId={activeWindowId}
         onWindowClick={handleWindowClick}
       />
 
+      {/* System Tray */}
       <SystemTray />
     </footer>
   );
