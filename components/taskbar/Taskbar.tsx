@@ -8,6 +8,8 @@ import StartButton from "./StartButton";
 import StartMenu from "./StartMenu";
 import { useEffect, useRef, useState } from "react";
 import { launchApp } from "@/core/apps/appLauncher";
+import { useSystemManager } from "@/hooks/useSystemManager";
+import type { SystemMenuAction } from "./StartMenu";
 
 const Taskbar = () => {
   const {
@@ -17,6 +19,8 @@ const Taskbar = () => {
     minimizeWindow,
     restoreWindow,
   } = useWindowManager();
+
+  const { lock, sleep, logout, restart, shutdown } = useSystemManager();
 
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
 
@@ -72,6 +76,32 @@ const Taskbar = () => {
 
     focusWindow(windowId);
   };
+
+  const handleSystemAction = (action: SystemMenuAction) => {
+    setIsStartMenuOpen(false);
+
+    switch (action) {
+      case "lock":
+        lock();
+        break;
+
+      case "sleep":
+        sleep();
+        break;
+
+      case "logout":
+        logout();
+        break;
+
+      case "restart":
+        restart();
+        break;
+
+      case "shutdown":
+        shutdown();
+        break;
+    }
+  };
   return (
     <footer
       className="
@@ -85,19 +115,17 @@ const Taskbar = () => {
       "
     >
       {/* Start Button + Start Menu */}
-      <div
-        ref={startAreaRef}
-        className="relative flex shrink-0 items-center"
-      >
+      <div ref={startAreaRef} className="relative flex shrink-0 items-center">
         <StartButton
           isOpen={isStartMenuOpen}
-          onClick={() =>
-            setIsStartMenuOpen((previous) => !previous)
-          }
+          onClick={() => setIsStartMenuOpen((previous) => !previous)}
         />
 
         {isStartMenuOpen && (
-          <StartMenu onLaunchApp={handleLaunchApp} />
+          <StartMenu
+            onLaunchApp={handleLaunchApp}
+            onSystemAction={handleSystemAction}
+          />
         )}
       </div>
 

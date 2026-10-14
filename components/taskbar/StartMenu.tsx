@@ -4,11 +4,19 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { appRegistry } from "@/core/apps/appRegistry";
 
+export type SystemMenuAction =
+  | "lock"
+  | "sleep"
+  | "logout"
+  | "restart"
+  | "shutdown";
+
 type StartMenuProps = {
   onLaunchApp: (appId: string) => void;
+  onSystemAction: (action: SystemMenuAction) => void;
 };
 
-const StartMenu = ({ onLaunchApp }: StartMenuProps) => {
+const StartMenu = ({ onLaunchApp, onSystemAction }: StartMenuProps) => {
   const [query, setQuery] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -164,6 +172,54 @@ const StartMenu = ({ onLaunchApp }: StartMenuProps) => {
             </p>
           </div>
         )}
+      </div>
+
+      <div className="border-t border-white/[0.07] p-3">
+        <p className="mb-2 px-2 text-[10px] uppercase tracking-[0.18em] text-slate-500">
+          Session & Power
+        </p>
+
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => onSystemAction("lock")}
+            className="rounded-lg border border-white/6 bg-white/3 px-3 py-2 text-left text-xs text-slate-300 transition hover:border-cyan-300/20 hover:bg-cyan-300/6 hover:text-cyan-100"
+          >
+            Lock session
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onSystemAction("sleep")}
+            className="rounded-lg border border-white/6 bg-white/3 px-3 py-2 text-left text-xs text-slate-300 transition hover:border-cyan-300/20 hover:bg-cyan-300/6 hover:text-cyan-100"
+          >
+            Sleep
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onSystemAction("logout")}
+            className="rounded-lg border border-white/6 bg-white/3 px-3 py-2 text-left text-xs text-slate-300 transition hover:border-cyan-300/20 hover:bg-cyan-300/6 hover:text-cyan-100"
+          >
+            Log out
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onSystemAction("restart")}
+            className="rounded-lg border border-white/6 bg-white/3 px-3 py-2 text-left text-xs text-amber-200/80 transition hover:border-amber-300/20 hover:bg-amber-300/6"
+          >
+            Restart
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onSystemAction("shutdown")}
+            className="col-span-2 rounded-lg border border-rose-400/15 bg-rose-400/4 px-3 py-2 text-left text-xs text-rose-200/80 transition hover:border-rose-300/30 hover:bg-rose-400/8"
+          >
+            Shut down CyberpunkOS
+          </button>
+        </div>
       </div>
 
       {/* Footer */}

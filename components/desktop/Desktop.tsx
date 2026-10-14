@@ -1,15 +1,18 @@
-import Taskbar from '../taskbar/Taskbar'
-import DesktopBackground from './DesktopBackground'
-import DesktopWorkspace from './DesktopWorkspace'
+import SystemLifecycleOverlay from "../system/SystemLifecycleOverlay";
+import Taskbar from "../taskbar/Taskbar";
+import DesktopBackground from "./DesktopBackground";
+import DesktopWorkspace from "./DesktopWorkspace";
 
 const Desktop = () => {
   return (
-    <div className='relative h-screen w-screen overflow-hidden'>
-        <DesktopBackground />
-        <DesktopWorkspace />
-        <Taskbar />
-    </div>
-  )
-}
+    <div className="relative h-screen w-screen overflow-hidden">
+      <DesktopBackground />
+      <DesktopWorkspace />
+      <Taskbar />
 
-export default Desktop
+      <SystemLifecycleOverlay />
+    </div>
+  );
+};
+
+export default Desktop;
