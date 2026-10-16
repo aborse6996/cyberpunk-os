@@ -53,7 +53,7 @@ const LoginScreen = ({ onLogin }: LoginScreenProps) => {
             }
       }
       transition={{
-        duration: shouldReduceMotion ? 0 : 0.5,
+        duration: shouldReduceMotion ? 0 : 1,
         ease: [0.22, 1, 0.36, 1],
       }}
       onAnimationComplete={handleExitComplete}
@@ -101,7 +101,7 @@ const LoginScreen = ({ onLogin }: LoginScreenProps) => {
                 flex h-12 w-12 items-center
                 justify-center rounded-xl
                 border border-cyan-300/30
-                bg-cyan-300/[0.06]
+                bg-cyan-300/6
                 text-lg font-bold text-cyan-200
                 shadow-[0_0_30px_rgba(34,211,238,0.12)]
               "
@@ -194,7 +194,7 @@ const LoginScreen = ({ onLogin }: LoginScreenProps) => {
             className="
               mt-7 flex items-center gap-4 rounded-xl
               border border-cyan-300/20
-              bg-cyan-300/[0.04] p-4
+              bg-cyan-300/4 p-4
             "
             whileHover={
               shouldReduceMotion

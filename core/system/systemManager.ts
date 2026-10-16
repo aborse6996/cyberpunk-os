@@ -5,6 +5,8 @@ import type {
 
 import { transitionSystemState } from "./systemLifecycle";
 
+import { windowManager } from "../windowManager/windowManager";
+
 type SystemListener = () => void;
 
 class SystemManager {
@@ -38,6 +40,13 @@ class SystemManager {
     this.state = nextState;
 
     this.listeners.forEach((listener) => listener());
+
+    const shouldResetSession =
+      action === "LOGOUT" || action === "RESTART" || action === "SHUTDOWN";
+
+    if (shouldResetSession) {
+      windowManager.resetSession();
+    }
   };
 
   bootComplete = () => this.dispatch("BOOT_COMPLETE");

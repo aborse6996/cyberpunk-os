@@ -223,6 +223,18 @@ class WindowManager {
 
     this.commit(windows, this.snapshot.activeWindowId);
   };
+
+  // Reset after shutdown or restart
+  resetSession = () => {
+    if (
+      this.snapshot.windows.length === 0 &&
+      this.snapshot.activeWindowId === null
+    ) {
+      return;
+    }
+
+    this.commit([], null);
+  };
 }
 
 export const windowManager = new WindowManager();
