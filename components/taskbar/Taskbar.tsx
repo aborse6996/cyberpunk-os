@@ -6,10 +6,11 @@ import RunningApps from "./RunningApps";
 import SystemTray from "./SystemTray";
 import StartButton from "./StartButton";
 import StartMenu from "./StartMenu";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { launchApp } from "@/core/apps/appLauncher";
 import { useSystemManager } from "@/hooks/useSystemManager";
 import type { SystemMenuAction } from "./StartMenu";
+import { UseKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 const Taskbar = () => {
   const {
@@ -20,11 +21,48 @@ const Taskbar = () => {
     restoreWindow,
   } = useWindowManager();
 
-  const { lock, sleep, logout, restart, shutdown } = useSystemManager();
+  const {
+    state: systemState,
+    lock,
+    sleep,
+    logout,
+    restart,
+    shutdown,
+  } = useSystemManager();
 
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
 
   const startAreaRef = useRef<HTMLDivElement>(null);
+
+  const toggleStartMenu = useCallback(() => {
+    setIsStartMenuOpen((previous) => !previous);
+  }, []);
+
+  const handleSwitchWindow = useCallback(() => {
+    if (windows.length === 0) return;
+
+    const currentIndex = windows.findIndex(
+      (window) => window.windowId === activeWindowId,
+    );
+
+    const nextIndex =
+      currentIndex === -1 ? 0 : (currentIndex + 1) % windows.length;
+
+    const nextWindow = windows[nextIndex];
+
+    if (!nextWindow) return;
+
+    if (nextWindow.state === "minimized") {
+      restoreWindow(nextWindow.windowId);
+    } else {
+      focusWindow(nextWindow.windowId);
+    }
+  }, [windows, activeWindowId, restoreWindow, focusWindow]);
+
+  const handleLaunchTerminal = useCallback(() => {
+    launchApp("terminal");
+    setIsStartMenuOpen(false);
+  }, []);
 
   useEffect(() => {
     if (!isStartMenuOpen) return;
@@ -102,6 +140,14 @@ const Taskbar = () => {
         break;
     }
   };
+
+  UseKeyboardShortcuts({
+    onToggleStartMenu: toggleStartMenu,
+    onSwitchWindow: handleSwitchWindow,
+    onLaunchTerminal: handleLaunchTerminal,
+    enabled: systemState === "desktop",
+  });
+
   return (
     <footer
       className="
@@ -116,10 +162,7 @@ const Taskbar = () => {
     >
       {/* Start Button + Start Menu */}
       <div ref={startAreaRef} className="relative flex shrink-0 items-center">
-        <StartButton
-          isOpen={isStartMenuOpen}
-          onClick={() => setIsStartMenuOpen((previous) => !previous)}
-        />
+        <StartButton isOpen={isStartMenuOpen} onClick={toggleStartMenu} />
 
         {isStartMenuOpen && (
           <StartMenu
