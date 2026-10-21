@@ -1,16 +1,18 @@
 "use client";
 
-import { useWindowManager } from "@/hooks/useWindowManager";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 
+import { useWindowManager } from "@/hooks/useWindowManager";
 import RunningApps from "./RunningApps";
 import SystemTray from "./SystemTray";
 import StartButton from "./StartButton";
 import StartMenu from "./StartMenu";
-import { useEffect, useRef, useState, useCallback } from "react";
 import { launchApp } from "@/core/apps/appLauncher";
 import { useSystemManager } from "@/hooks/useSystemManager";
 import type { SystemMenuAction } from "./StartMenu";
 import { UseKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import WindowSwitcher from "../desktop/WindowSwitcher";
 
 const Taskbar = () => {
   const {
@@ -32,11 +34,47 @@ const Taskbar = () => {
 
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
 
+  const [isWindowSwitcherOpen, setIsWindowSwitcherOpen] = useState(false);
+
   const startAreaRef = useRef<HTMLDivElement>(null);
 
   const toggleStartMenu = useCallback(() => {
+    setIsWindowSwitcherOpen(false);
     setIsStartMenuOpen((previous) => !previous);
   }, []);
+
+  const handleOpenWindowSwitcher = useCallback(() => {
+    setIsStartMenuOpen(false);
+    setIsWindowSwitcherOpen(true);
+  }, []);
+
+  const handleCloseWindowSwitcher = useCallback(() => {
+    setIsWindowSwitcherOpen(false);
+  }, []);
+
+  const handleSelectWindow = useCallback(
+    (windowId: string) => {
+      const selectedWindow = windows.find(
+        (window) => window.windowId === windowId,
+      );
+
+      if (!selectedWindow) return;
+
+      if (selectedWindow.state === "minimized") {
+        restoreWindow(windowId);
+      } else {
+        focusWindow(windowId);
+      }
+    },
+    [windows, restoreWindow, focusWindow],
+  );
+
+  useEffect(() => {
+    if (systemState !== "desktop") {
+      setIsStartMenuOpen(false);
+      setIsWindowSwitcherOpen(false);
+    }
+  }, [systemState]);
 
   const handleSwitchWindow = useCallback(() => {
     if (windows.length === 0) return;
@@ -91,6 +129,7 @@ const Taskbar = () => {
   }, [isStartMenuOpen]);
 
   const handleLaunchApp = (appId: string) => {
+    setIsWindowSwitcherOpen(false);
     launchApp(appId);
     setIsStartMenuOpen(false);
   };
@@ -117,6 +156,7 @@ const Taskbar = () => {
 
   const handleSystemAction = (action: SystemMenuAction) => {
     setIsStartMenuOpen(false);
+    setIsWindowSwitcherOpen(false);
 
     switch (action) {
       case "lock":
@@ -143,14 +183,15 @@ const Taskbar = () => {
 
   UseKeyboardShortcuts({
     onToggleStartMenu: toggleStartMenu,
-    onSwitchWindow: handleSwitchWindow,
+    onSwitchWindow: handleOpenWindowSwitcher,
     onLaunchTerminal: handleLaunchTerminal,
     enabled: systemState === "desktop",
   });
 
   return (
-    <footer
-      className="
+    <>
+      <footer
+        className="
         pointer-events-auto absolute inset-x-0 bottom-0 z-30
         grid h-16 grid-cols-[auto_minmax(0,1fr)_auto]
         items-center gap-4
@@ -159,29 +200,41 @@ const Taskbar = () => {
         shadow-[0_-8px_30px_rgba(0,0,0,0.2)]
         backdrop-blur-2xl
       "
-    >
-      {/* Start Button + Start Menu */}
-      <div ref={startAreaRef} className="relative flex shrink-0 items-center">
-        <StartButton isOpen={isStartMenuOpen} onClick={toggleStartMenu} />
+      >
+        {/* Start Button + Start Menu */}
+        <div ref={startAreaRef} className="relative flex shrink-0 items-center">
+          <StartButton isOpen={isStartMenuOpen} onClick={toggleStartMenu} />
 
-        {isStartMenuOpen && (
-          <StartMenu
-            onLaunchApp={handleLaunchApp}
-            onSystemAction={handleSystemAction}
-          />
+          {isStartMenuOpen && (
+            <StartMenu
+              onLaunchApp={handleLaunchApp}
+              onSystemAction={handleSystemAction}
+            />
+          )}
+        </div>
+
+        {/* Running Applications */}
+        <RunningApps
+          windows={windows}
+          activeWindowId={activeWindowId}
+          onWindowClick={handleWindowClick}
+        />
+
+        {/* System Tray */}
+        <SystemTray />
+      </footer>
+      {isWindowSwitcherOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <WindowSwitcher
+            windows={windows}
+            activeWindowId={activeWindowId}
+            onSelectWindow={handleSelectWindow}
+            onClose={handleCloseWindowSwitcher}
+          />,
+          document.body,
         )}
-      </div>
-
-      {/* Running Applications */}
-      <RunningApps
-        windows={windows}
-        activeWindowId={activeWindowId}
-        onWindowClick={handleWindowClick}
-      />
-
-      {/* System Tray */}
-      <SystemTray />
-    </footer>
+    </>
   );
 };
 
