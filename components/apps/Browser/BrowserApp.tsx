@@ -47,6 +47,9 @@ const BrowserApp = () => {
   const [currentUrl, setCurrentUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [history, setHistory] = useState<(string | null)[]>([null]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+
   const handleSubmit = () => {
     const destination = resolveAddress(address);
 
@@ -55,17 +58,85 @@ const BrowserApp = () => {
       return;
     }
 
+    navigateTo(destination);
+  };
+
+  const handleGoHome = () => {
+    navigateTo(null);
+  };
+
+  const navigateTo = (destination: string | null) => {
+    const nextHistory = [...history.slice(0, historyIndex + 1), destination];
+
+    setHistory(nextHistory);
+    setHistoryIndex(nextHistory.length - 1);
+
     setCurrentUrl(destination);
-    setAddress(destination);
+    setAddress(destination ?? "");
     setFeedback("");
-    setIsLoading(true);
+    setIsLoading(Boolean(destination));
+  };
+
+  const goBack = () => {
+    if (historyIndex <= 0) return;
+
+    const nextIndex = historyIndex - 1;
+    const destination = history[nextIndex];
+
+    setHistoryIndex(nextIndex);
+    setCurrentUrl(destination);
+    setAddress(destination ?? "");
+    setFeedback("");
+    setIsLoading(Boolean(destination));
+  };
+
+  const goForward = () => {
+    if (historyIndex >= history.length - 1) return;
+
+    const nextIndex = historyIndex + 1;
+    const destination = history[nextIndex];
+
+    setHistoryIndex(nextIndex);
+    setCurrentUrl(destination);
+    setAddress(destination ?? "");
+    setFeedback("");
+    setIsLoading(Boolean(destination));
   };
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-[#070c14] text-slate-200">
       {/* Address Bar Placeholder */}
-      <div className="shrink-0 border-b border-white/5 bg-[#0a111c] p-3">
-        <div className="flex h-9 items-center gap-2 rounded-lg border border-white/10 bg-black/30 px-3 transition focus-within:border-cyan-300/40">
+      <div className="shrink-0 border-b border-white/5 bg-[#0a111c] p-3 flex gap-2">
+        <button
+          type="button"
+          onClick={handleGoHome}
+          title="Home"
+          aria-label="Go to homepage"
+          className="rounded-lg px-3 text-sm text-slate-400 transition hover:bg-white/5 hover:text-cyan-300"
+        >
+          H
+        </button>
+        <button
+          type="button"
+          onClick={goBack}
+          disabled={historyIndex === 0}
+          title="Go Back"
+          aria-label="Go Back"
+          className="rounded-lg px-3 text-sm text-slate-400 transition hover:bg-white/5 hover:text-cyan-300 disabled:cursor-not-allowed disabled:opacity-25"
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          onClick={goForward}
+          disabled={historyIndex >= history.length - 1}
+          title="Go forward"
+          aria-label="Go forward"
+          className="rounded-lg px-3 text-sm text-slate-400 transition hover:bg-white/5 hover:text-cyan-300 disabled:cursor-not-allowed disabled:opacity-25"
+        >
+          →
+        </button>
+        <div className="flex w-full h-9 items-center gap-2 rounded-lg border border-white/10 bg-black/30 px-3 transition focus-within:border-cyan-300/40">
           <span className="text-cyan-400">⌕</span>
 
           <input
@@ -98,9 +169,9 @@ const BrowserApp = () => {
       </div>
 
       {/* Browser Home Screen */}
-      <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#070c14]">
+      <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#070c14] justify-center items-center">
         {currentUrl ? (
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
             {/* Website status bar */}
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
               <span className="truncate text-xs text-slate-400">
@@ -119,7 +190,7 @@ const BrowserApp = () => {
             </div>
           </div>
         ) : (
-          <div className="w-full max-w-xl text-center">
+          <div className="max-w-xl text-center ">
             <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-300/30 bg-cyan-300/5 text-3xl text-cyan-300">
               ◉
             </div>
