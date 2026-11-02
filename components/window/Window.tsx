@@ -6,6 +6,7 @@ import WindowHeader from "./WindowHeader";
 import { useWindowDrag } from "./hooks/useWindowDrag";
 import { useWindowResize } from "./hooks/useWindowResize";
 import WindowResizeHandle from "./WindowResizeHandle";
+import { motion } from "framer-motion";
 
 type BoundsRef = {
   readonly current: HTMLElement | null;
@@ -72,17 +73,32 @@ const Window = ({
   });
 
   return (
-    <section
-      className={`pointer-events-auto absolute flex flex-col overflow-hidden rounded-xl border bg-[#070B14]/95 backdrop-blur-xl transition-[border-color,box-shadow] duration-200 
-      ${isActive ? "border-cyan-300/40 shadow-[0_0_35px_rgba(34,211,238,0.12)]" : "border-white/10 shadow-[0_15px_50px_rgba(0,0,0,0.35)]"}
-      `}
+    <motion.section
+      initial={{
+        opacity: 0,
+        scale: 0.82,
+      }}
+      animate={{
+        opacity: 1,
+        scale: 1,
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 320,
+        damping: 26,
+        mass: 0.7,
+      }}
       style={{
         left: position.x,
         top: position.y,
         width: size.width,
         height: size.height,
         zIndex,
+        transformOrigin: "center center",
       }}
+      className={`pointer-events-auto absolute flex flex-col overflow-hidden rounded-xl border bg-[#070B14]/95 backdrop-blur-xl transition-[border-color,box-shadow] duration-200 
+      ${isActive ? "border-cyan-300/40 shadow-[0_0_35px_rgba(34,211,238,0.12)]" : "border-white/10 shadow-[0_15px_50px_rgba(0,0,0,0.35)]"}
+      `}
       onPointerDown={() => onFocusRequest(windowId)}
     >
       <WindowHeader
@@ -104,7 +120,7 @@ const Window = ({
           onPointerUp={handleResizePointerUp}
         />
       )}
-    </section>
+    </motion.section>
   );
 };
 

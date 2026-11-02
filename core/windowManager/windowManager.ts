@@ -35,6 +35,22 @@ const DEFAULT_SIZE: WindowSize = {
   height: 450,
 };
 
+const TASKBAR_HEIGHT = 64;
+
+const getWorkspaceSize = (): WindowSize => {
+  if (typeof window === "undefined") {
+    return {
+      width: 1280,
+      height: 656,
+    };
+  }
+
+  return {
+    width: window.innerWidth,
+    height: window.innerHeight - TASKBAR_HEIGHT,
+  };
+};
+
 class WindowManager {
   private snapshot: WindowManagerSnapshot = {
     windows: [],
@@ -77,21 +93,36 @@ class WindowManager {
       0,
     );
 
+    // Get the available desktop dimensions.
+    const workspaceSize = getWorkspaceSize();
+
+    // Save the normal geometry for later restoration.
+    const previousGeometry: WindowGeometry = {
+      position: {
+        ...(options.position ?? DEFAULT_POSITION),
+      },
+      size: {
+        ...(options.size ?? DEFAULT_SIZE),
+      },
+    };
+
+    // Every newly created application starts maximized.
     const window: WindowDefinition = {
       windowId: options.windowId,
       appId: options.appId,
       title: options.title,
 
       position: {
-        ...(options.position ?? DEFAULT_POSITION),
+        x: 0,
+        y: 0,
       },
 
       size: {
-        ...(options.size ?? DEFAULT_SIZE),
+        ...workspaceSize,
       },
 
-      previousGeometry: null,
-      state: "normal",
+      previousGeometry,
+      state: "maximized",
       zIndex: highestZindex + 1,
     };
 
